@@ -30,7 +30,7 @@ baseUrl="https://partner-images.canonical.com/core/$VERSION"
 # install qemu-user-static
 if [ -n "${QEMU_ARCH}" ]; then
     if [ ! -f ${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz ]; then
-        wget -N https://github.com/multiarch/qemu-user-static/releases/download/${QEMU_VER}/${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz
+        wget -N https://github.com/sofwerx/multiarch-qemu-user-static/releases/download/${QEMU_VER}/${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz
     fi
     tar -xvf ${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz -C $ROOTFS/usr/bin/
 fi
