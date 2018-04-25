@@ -5,6 +5,8 @@ OPTIND=1 # Reset in case getopts has been used previously in the shell.
 
 while getopts "a:v:q:u:d:t:" opt; do
     case "$opt" in
+    h)  HOST_ARCH=$OPTARG
+        ;;
     a)  ARCH=$OPTARG
         ;;
     v)  VERSION=$OPTARG
@@ -27,10 +29,10 @@ baseUrl="https://partner-images.canonical.com/core/$VERSION"
 
 # install qemu-user-static
 if [ -n "${QEMU_ARCH}" ]; then
-    if [ ! -f x86_64_qemu-${QEMU_ARCH}-static.tar.gz ]; then
-        wget -N https://github.com/multiarch/qemu-user-static/releases/download/${QEMU_VER}/x86_64_qemu-${QEMU_ARCH}-static.tar.gz
+    if [ ! -f ${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz ]; then
+        wget -N https://github.com/multiarch/qemu-user-static/releases/download/${QEMU_VER}/${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz
     fi
-    tar -xvf x86_64_qemu-${QEMU_ARCH}-static.tar.gz -C $ROOTFS/usr/bin/
+    tar -xvf ${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz -C $ROOTFS/usr/bin/
 fi
 
 
@@ -56,15 +58,15 @@ fi
 cat > Dockerfile <<-EOF
 	FROM scratch
 	ADD $thisTar /
-	ENV ARCH=${ARCH} UBUNTU_SUITE=${VERSION} DOCKER_REPO=${DOCKER_REPO}
+	ENV HOST_ARCH=${HOST_ARCH} ARCH=${ARCH} UBUNTU_SUITE=${VERSION} DOCKER_REPO=${DOCKER_REPO}
 EOF
 
 # add qemu-user-static binary
 if [ -n "${QEMU_ARCH}" ]; then
     cat >> Dockerfile <<EOF
 
-# Add qemu-user-static binary for amd64 builders
-ADD x86_64_qemu-${QEMU_ARCH}-static.tar.gz /usr/bin
+# Add qemu-user-static binary for ${ARCH} builders
+ADD ${HOST_ARCH}_qemu-${QEMU_ARCH}-static.tar.gz /usr/bin
 EOF
 fi
 
@@ -91,5 +93,5 @@ cat >> Dockerfile <<-EOF
 	CMD ["/bin/bash"]
 EOF
 
-docker build -t "${DOCKER_REPO}:${TAG_ARCH}-${VERSION}" .
-docker run --rm "${DOCKER_REPO}:${TAG_ARCH}-${VERSION}" /bin/bash -ec "echo Hello from Ubuntu!"
+docker build -t "${DOCKER_REPO}:${HOST_ARCH}-${TAG_ARCH}-${VERSION}" .
+docker run --rm "${DOCKER_REPO}:${HOST_ARCH}-${TAG_ARCH}-${VERSION}" /bin/bash -ec "echo Hello from Ubuntu!"
